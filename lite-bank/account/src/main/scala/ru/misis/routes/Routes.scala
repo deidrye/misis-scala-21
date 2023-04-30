@@ -9,6 +9,7 @@ import akka.util.Timeout
 import ru.misis.model.Account
 import ru.misis.service.Service
 import spray.json.DefaultJsonProtocol.jsonFormat2
+import spray.json.DefaultJsonProtocol._
 
 import scala.concurrent.{ExecutionContext, Future}
 
