@@ -4,10 +4,24 @@ import ru.misis.event.Event
 
 object Account {
 
+    var stateList: List[State] = List()
+
     case class State(id: Int, amount: Int) {
-        def update(value: Int) = copy(amount = amount + value)
+        def update(value: Int): State = {
+            val updatedState = copy(amount = amount + value)
+            stateList = stateList.map(state =>
+                if (state.id == id) updatedState else state)
+            updatedState
+        }
     }
 
-    case class AccountUpdated(accountId: Option[Int] = None, value: Int, category: Option[String] = None, needCommit: Option[Boolean] = Some(false)) extends Event
+    def create(): State = {
+        val newId = stateList.size + 1
+        val newState = State(newId, 0)
+        stateList = newState :: stateList
+        newState
+    }
+
+    case class AccountUpdated(accountId: Int, value: Int, category: Option[String] = None, needCommit: Option[Boolean] = Some(false)) extends Event
 
 }
