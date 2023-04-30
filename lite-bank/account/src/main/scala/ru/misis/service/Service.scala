@@ -97,24 +97,4 @@ class Service(accountId: Int)(implicit val system: ActorSystem, val executionCon
       .log("AccountUpdated error")
       .runWith(committerSink)
 
-    /*
- kafkaCSource[AccountUpdated]
-   .filter {
-       case (_, AccountUpdated(id, _,  _, _)) =>
-           id == accountId
-       case (_, event) =>
-           logger.info(s"Empty account ${event}")
-           false
-   }
-   .map { case message @ (_, AccountUpdated(_, value,  _, _)) =>
-       state = state.update(value)
-       logger.info(s"State updated ${value} ${state}")
-       message
-   }
-   .filter { case (_, AccountUpdated(_, _, _, needCommit)) => needCommit.getOrElse(false)}
-   .map { case (offset, _) => offset }
-   .log("AccountUpdated error")
-   .runWith(committerSink)
-
-     */
 }
