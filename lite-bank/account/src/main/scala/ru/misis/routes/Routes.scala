@@ -11,7 +11,7 @@ import ru.misis.service.Service
 import spray.json.DefaultJsonProtocol.jsonFormat2
 import spray.json.DefaultJsonProtocol._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class Routes(service: Service)(implicit val system: ActorSystem, val executionContext: ExecutionContext) {
 
@@ -27,20 +27,21 @@ class Routes(service: Service)(implicit val system: ActorSystem, val executionCo
           path("create") {
               post {
                   val newState = service.create
-                  new Service(Account.stateList.size + 1)
                   complete(StatusCodes.OK, newState)
               }
           } ~
           path("account" / IntNumber / "amount") { accountId =>
               get {
-                  val accountService = new Service(accountId)
-                  complete(StatusCodes.OK, s"Account $accountId amount: ${accountService.getAmount}")
+                  //complete(StatusCodes.OK, s"Account $accountId amount: ${accountService.getAmount}")
+                  onSuccess(service.getAmount(accountId)) {
+                      case Left(message) => complete(StatusCodes.BadRequest, message)
+                      case Right(value) => complete(StatusCodes.OK, s"Account $accountId amount: ${service.getAmount(accountId)}")
+                  }
               }
           } ~
           path("account" / IntNumber / "credit" / IntNumber) { (accId, amount) =>
               post {
-                  val accountService = new Service(accId)
-                  onSuccess(accountService.CreditOrDebit(amount, "credit", "defaultCategory")) {
+                  onSuccess(service.CreditOrDebit(accId, amount, "credit", None)) {
                       case Left(message) => complete(StatusCodes.BadRequest, message)
                       case Right(value) => complete(StatusCodes.OK, "OK")
                   }
@@ -49,8 +50,7 @@ class Routes(service: Service)(implicit val system: ActorSystem, val executionCo
           path("account" / IntNumber / "debit" / IntNumber / Segment.?) { (accId, amount, category) =>
               post {
 
-                  val accountService = new Service(accId)
-                  onSuccess(accountService.CreditOrDebit(amount, "debit", category.getOrElse("defaultCategory"))) {
+                  onSuccess(service.CreditOrDebit(accId, amount, "debit", category)) {
                       case Left(message) => complete(StatusCodes.BadRequest, message)
                       case Right(value) => complete(StatusCodes.OK, "OK")
                   }
@@ -58,11 +58,10 @@ class Routes(service: Service)(implicit val system: ActorSystem, val executionCo
           }~
           path("account" / IntNumber / "transfer" / IntNumber / IntNumber) { (accId1, accId2, amount) =>
               post {
-                  val accountService1 = new Service(accId1)
-                  val accountService2 = new Service(accId2)
-                  onSuccess(accountService1.CreditOrDebit(amount, "debit", "defaultCategory")) {
+
+                  onSuccess(service.CreditOrDebit(accId1, amount, "debit", None)) {
                       case Left(message) => complete(StatusCodes.BadRequest, message)
-                      case Right(_) => onSuccess(accountService2.CreditOrDebit(amount, "credit", "defaultCategory")) {
+                      case Right(_) => onSuccess(service.CreditOrDebit(accId2, amount, "credit", None)) {
                           case Left(message) => complete(StatusCodes.BadRequest, message)
                           case Right(_) => complete(StatusCodes.OK, "OK")
                       }
