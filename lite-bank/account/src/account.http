@@ -8,16 +8,29 @@ POST localhost:8101/create
 GET localhost:8101/accounts
 
 ###
-POST localhost:8101/account/2/credit/150
+POST localhost:8101/account/1/credit/100
 
 ###
-GET localhost:8101/account/3/amount
+GET localhost:8101/account/1/amount
+
+###
+GET localhost:8101/account/2/amount
 
 ###
 POST localhost:8101/account/2/transfer/1/50
 
 ###
-POST localhost:8101/account/1/transfer/2/25
+POST localhost:8101/account/1/transfer/2/1
+
 
 ###
-POST localhost:8101/account/2/debit/100/category3
+GET localhost:8080/categories
+
+###
+POST localhost:8101/account/1/debit/50/hard
+
+###
+POST localhost:8080/create/category/carshops/2
+
+###
+POST localhost:8101/account/1/debit/50/carshops
